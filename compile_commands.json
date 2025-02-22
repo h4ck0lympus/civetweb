@@ -1,0 +1,51 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-Wall",
+      "-Wextra",
+      "-Wshadow",
+      "-Wformat-security",
+      "-Winit-self",
+      "-Wmissing-prototypes",
+      "-DLINUX",
+      "-Iinclude",
+      "-DUSE_STACK_SIZE=102400",
+      "-O2",
+      "-DNDEBUG",
+      "-DOPENSSL_API_1_1",
+      "-fPIC",
+      "-o",
+      "out/src/civetweb.o",
+      "src/civetweb.c"
+    ],
+    "directory": "/home/p4nic/code/research/civetweb",
+    "file": "/home/p4nic/code/research/civetweb/src/civetweb.c",
+    "output": "/home/p4nic/code/research/civetweb/out/src/civetweb.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-Wall",
+      "-Wextra",
+      "-Wshadow",
+      "-Wformat-security",
+      "-Winit-self",
+      "-Wmissing-prototypes",
+      "-DLINUX",
+      "-Iinclude",
+      "-DUSE_STACK_SIZE=102400",
+      "-O2",
+      "-DNDEBUG",
+      "-DOPENSSL_API_1_1",
+      "-o",
+      "out/src/main.o",
+      "src/main.c"
+    ],
+    "directory": "/home/p4nic/code/research/civetweb",
+    "file": "/home/p4nic/code/research/civetweb/src/main.c",
+    "output": "/home/p4nic/code/research/civetweb/out/src/main.o"
+  }
+]

@@ -227,6 +227,10 @@ static int zephyr_worker_stack_index;
 #include "civetweb.h"
 #endif
 
+#ifdef CUSTOM_HARNESS
+int CONNECTION_COUNTER = 0;
+#endif /* ifdef CUSTOM_HARNESS */
+
 #if !defined(DEBUG_TRACE)
 #if defined(DEBUG)
 static void DEBUG_TRACE_FUNC(const char *func,
@@ -19804,8 +19808,9 @@ init_connection(struct mg_connection *conn)
  * using the same connection.
  * Must be called with a valid connection (conn  and
  * conn->phys_ctx must be valid).
+ * hackolympus: making this non static so i can "shortcircuit" civetweb and call this directly
  */
-static void
+void
 process_new_connection(struct mg_connection *conn)
 {
 	struct mg_request_info *ri = &conn->request_info;
@@ -20455,6 +20460,13 @@ accept_new_connection(const struct socket *listener, struct mg_context *ctx)
 	int on = 1;
 #endif
 	memset(&so, 0, sizeof(so));
+    
+    // hackolympus: accepts a connection whenever a request is made 
+    // to the server
+    
+#ifdef CUSTOM_HARNESS
+    CONNECTION_COUNTER++;
+#endif
 
 	if ((so.sock = accept(listener->sock, &so.rsa.sa, &len))
 	    == INVALID_SOCKET) {
@@ -20533,6 +20545,8 @@ accept_new_connection(const struct socket *listener, struct mg_context *ctx)
 }
 
 
+// master thread runner will run a master thread that will initializize thread local storage
+// that will run some worker threads 
 static void
 master_thread_run(struct mg_context *ctx)
 {

@@ -23,6 +23,11 @@
 #ifndef CIVETWEB_HEADER_INCLUDED
 #define CIVETWEB_HEADER_INCLUDED
 
+#ifdef CUSTOM_HARNESS
+extern int CONNECTION_COUNTER;
+extern void process_new_connection(struct mg_connection *conn);
+#endif
+
 #define CIVETWEB_VERSION "1.17"
 #define CIVETWEB_VERSION_MAJOR (1)
 #define CIVETWEB_VERSION_MINOR (17)
