@@ -6768,7 +6768,8 @@ mg_read_inner(struct mg_connection *conn, void *buf, size_t len)
 
 
 /* Forward declarations */
-static void handle_request(struct mg_connection *);
+void handle_request(struct mg_connection *);
+
 static void log_access(const struct mg_connection *);
 
 
@@ -15006,12 +15007,12 @@ release_handler_ref(struct mg_connection *conn,
 	}
 }
 
-
+// hackolympus: the target function
 /* This is the heart of the Civetweb's logic.
  * This function is called when the request is read, parsed and validated,
  * and Civetweb must decide what action to take: serve a file, or
  * a directory, or call embedded function, etcetera. */
-static void
+void
 handle_request(struct mg_connection *conn)
 {
 	struct mg_request_info *ri = &conn->request_info;

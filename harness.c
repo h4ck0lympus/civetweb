@@ -12,14 +12,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// stupid solution but this works i swear....
-
 typedef struct ssl_st SSL;
 typedef int volatile stop_flag_t;
 typedef int SOCKET;
 
 #define NUM_WEBDAV_LOCKS 10
 
+#define MG_BUF_LEN (1024 * 8)
 #define PATH_MAX 4096
 #define UTF8_PATH_MAX (PATH_MAX)
 
@@ -430,19 +429,21 @@ struct mg_context {
 
 #define MAX_CONNECTIONS 4
 
-static struct mg_context *ctx = NULL; // server context
+static struct mg_context *global_ctx = NULL; // server context
 static unsigned short PORT_NUM_HTTP = 0; // port number we are running the server on
-static uint64_t call_count = 0; // how many times we have called the fuzzer 
 
 const char *init_options[] = {
     "listening_ports","0", // automatically pick free tcp port at runtime
-    "document_root",".",
+    "num_threads", "1", // minimal interal threads
+    "document_root", "/dev/null",
+    "error_log_file", "/dev/null",
+    "access_log_file", "/dev/null",
     NULL
 };
 
 static void civetweb_exit(void) {
-    mg_stop(ctx);
-    ctx = NULL;
+    mg_stop(global_ctx);
+    global_ctx = NULL;
 }
 
 // https://github.com/civetweb/civetweb/blob/7f95a2632ef651402c15c39b72c4620382dd82bf/fuzztest/fuzzmain.c#L74
@@ -454,12 +455,12 @@ static void civetweb_init(void) {
     
     // we should look at the implementation in server 
     // global state whether or not loop is ran 
-    ctx = mg_start(&callbacks, NULL, init_options);
-    if (!ctx) {
+    global_ctx = mg_start(&callbacks, NULL, init_options);
+    if (!global_ctx) {
         fprintf(stderr, "Failed to start CivetWeb\n");
         exit(1);
     }
-    int ret = mg_get_server_ports(ctx, 8, ports);
+    int ret = mg_get_server_ports(global_ctx, 8, ports);
     if (ret < 1) {
         fprintf(stderr, "Failed to get CivetWeb ports\n");
         exit(1);
@@ -469,55 +470,76 @@ static void civetweb_init(void) {
     atexit(civetweb_exit);
 }
 
-struct ThreadArgs {
+// Thread info structure
+struct ThreadArg {
+    struct mg_context *ctx;
     const uint8_t *data;
     size_t len;
-} typedef ThreadArgs;
+}; 
 
-static void* fuzz_thread(void *arg) {
-    ThreadArgs *t = (ThreadArgs*)arg;
+void *fuzz_thread(void *arg) {
+    struct ThreadArg *ta = arg;
     
-    struct mg_connection *conn = (struct mg_connection*) malloc(sizeof(struct mg_connection));
-    if (!conn) {
-        fprintf(stderr, "Failed to allocate memory for struct mg_connection\n");
-        return NULL;
+    struct mg_connection *conn = calloc(1, sizeof(struct mg_connection));
+    if (conn == NULL) {
+        fprintf(stderr, "calloc failed for mg_connection:%s\n", __LINE__);
     }
-    memset(conn, 0, sizeof(struct mg_connection));
-    conn->buf = (char*) t->data;
-    conn->buf_size = t->len;
-    conn->request_len = t->len;
-    conn->data_len = t->len;
-    
-    struct mg_context fake_ctx;
-    conn->phys_ctx = &fake_ctx;
+    conn->phys_ctx = ta->ctx;
+    conn->dom_ctx  = &ta->ctx->dd;
+    pthread_mutex_init(&conn->mutex, NULL);
+    conn->buf = malloc(MG_BUF_LEN);
+    conn->buf_size = MG_BUF_LEN;
 
+    // socketpair for simulated client-server connection
+    int sv[2];
+    socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
+    conn->client.sock = sv[0];
+    conn->client.is_ssl = 0;
+    conn->client.in_use = 1;
+    
+    // writing fuzz data to the client end of the socket
+    if (ta->len > 0) {
+        (void)write(sv[1], ta->data, ta->len);
+    }
+    shutdown(sv[1], SHUT_WR);
+
+    // process the new connection (HTTP request)
     process_new_connection(conn);
+    
+    mg_close_connection(conn);
+    pthread_mutex_destroy(&conn->mutex);
+    free(conn->buf);
     free(conn);
+    close(sv[1]);
     return NULL;
 }
 
-int LLVMFuzzerTestOneInput(const char *data, size_t size) {
-    // each thread should atleast get 1 byte of data to send
-    if (size < MAX_CONNECTIONS) return 0;
-    // if calling for the first time, initialize civet web
-    if (call_count == 0) civetweb_init();
-    call_count = 1;
-
-    // divide data into 4 chunks, each thread gets equal amount of data
-    size_t chunkSize = size / MAX_CONNECTIONS;
-    pthread_t thr[4];
-    ThreadArgs ta[4];
-
-    for (int i = 0; i < MAX_CONNECTIONS; i++) {
-        ta[i].data = (const uint8_t*) data + (i * chunkSize);
-        ta[i].len = chunkSize;
-        pthread_create(&thr[i], NULL, fuzz_thread, &ta[i]);
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+    if (!global_ctx) {
+        civetweb_init();
     }
+    if (size < 1) return 0;
+    int thread_count = (data[0] % 3) + 2;
+    const uint8_t *payload = data + 1;
+    size_t payload_len = size - 1;
+    size_t chunk = payload_len / thread_count;
+    
 
-    for (int i = 0; i < 4; i++) {
-        pthread_join(thr[i], NULL);
+    struct ThreadArg* targs = malloc(thread_count * sizeof(*targs));
+    
+    pthread_t *tids = malloc(thread_count * sizeof(*tids));
+    for (int i = 0; i < thread_count; ++i) {
+        targs[i].ctx = global_ctx;
+        targs[i].data = payload + i*chunk;
+        // Last thread gets all remaining bytes
+        targs[i].len = (i == thread_count-1 ? payload_len - i*chunk : chunk);
+        pthread_create(&tids[i], NULL, fuzz_thread, &targs[i]);
     }
-
+    
+    for (int i = 0; i < thread_count; ++i) {
+        pthread_join(tids[i], NULL);
+    }
+    free(targs);
+    free(tids);
     return 0;
 }
-
