@@ -91,7 +91,7 @@ else ifdef TEST_FUZZ
   APP_SOURCES = fuzztest/fuzzmain.c  harness.c
   OBJECTS = $(LIB_SOURCES:.c=.o) $(APP_SOURCES:.c=.o) harness.o
   CFLAGS += -DTEST_FUZZ$(TEST_FUZZ)
- else ifdef CUSTOM_TEST_FUZZ
+ else ifdef CUSTOM_HARNESS
   CFLAGS += -g -fsanitize=address,fuzzer,undefined -O0 -g -ggdb3 -fno-omit-frame-pointer -fsanitize-address-use-after-scope -fno-sanitize-recover=undefined
   CC = clang
   CXX = clang++
@@ -103,7 +103,7 @@ else
   CFLAGS += -O2 -DNDEBUG
 endif
 
-ifdef CUSTOM_TEST_FUZZ
+ifdef CUSTOM_HARNESS
 	CPROG = civetweb_custom_fuzz
 endif
 

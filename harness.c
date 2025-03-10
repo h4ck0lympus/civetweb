@@ -477,12 +477,12 @@ struct ThreadArg {
     size_t len;
 }; 
 
-void *fuzz_thread(void *arg) {
+static void *fuzz_thread(void *arg) {
     struct ThreadArg *ta = arg;
     
     struct mg_connection *conn = calloc(1, sizeof(struct mg_connection));
     if (conn == NULL) {
-        fprintf(stderr, "calloc failed for mg_connection:%s\n", __LINE__);
+        fprintf(stderr, "calloc failed for mg_connection:%d\n", __LINE__);
     }
     conn->phys_ctx = ta->ctx;
     conn->dom_ctx  = &ta->ctx->dd;
