@@ -23,7 +23,7 @@
 #ifndef CIVETWEB_HEADER_INCLUDED
 #define CIVETWEB_HEADER_INCLUDED
 
-#ifdef CUSTOM_TEST_FUZZ
+#ifdef CUSTOM_HARNESS
 extern int CONNECTION_COUNTER;
 void process_new_connection(struct mg_connection *conn);
 #endif
