@@ -15094,7 +15094,7 @@ handle_request(struct mg_connection *conn)
 	tmp = mg_strdup(ri->local_uri_raw);
 	if (!tmp) {
 		/* Out of memory. We cannot do anything reasonable here. */
-		return;
+		goto cleanup;
 	}
 	remove_dot_segments(tmp);
 	ri->local_uri = tmp;
@@ -15115,19 +15115,19 @@ handle_request(struct mg_connection *conn)
 		i = conn->phys_ctx->callbacks.begin_request(conn);
 		if (i > 0) {
 			/* callback already processed the request. Store the
-			return value as a status code for the access log. */
+			goto cleanup value as a status code for the access log. */
 			conn->status_code = i;
 			if (!conn->must_close) {
 				discard_unread_request_data(conn);
 			}
 			DEBUG_TRACE("%s", "begin_request handled request");
-			return;
+			goto cleanup;
 		} else if (i == 0) {
 			/* civetweb should process the request */
 		} else {
 			/* unspecified - may change with the next version */
 			DEBUG_TRACE("%s", "done (undocumented behavior)");
-			return;
+			goto cleanup;
 		}
 	}
 
@@ -15213,7 +15213,7 @@ handle_request(struct mg_connection *conn)
 			mg_printf(conn, "Access-Control-Max-Age: 60\r\n");
 			mg_printf(conn, "\r\n");
 			DEBUG_TRACE("%s", "OPTIONS done");
-			return;
+			goto cleanup;
 		}
 	}
 
@@ -15283,7 +15283,7 @@ handle_request(struct mg_connection *conn)
 			                   "%s method not allowed",
 			                   conn->request_info.request_method);
 			DEBUG_TRACE("%s", "webdav rejected");
-			return;
+			goto cleanup;
 		}
 	}
 
@@ -15305,7 +15305,7 @@ handle_request(struct mg_connection *conn)
 			/* Callback handler will not be used anymore. Release it */
 			release_handler_ref(conn, handler_info);
 			DEBUG_TRACE("%s", "auth handler rejected request");
-			return;
+			goto cleanup;
 		}
 	} else if (is_put_or_delete_request && !is_script_resource
 	           && !is_callback_resource) {
@@ -15328,7 +15328,7 @@ handle_request(struct mg_connection *conn)
 			                   "%s method not allowed",
 			                   conn->request_info.request_method);
 			DEBUG_TRACE("%s", "all file based put/delete requests rejected");
-			return;
+			goto cleanup;
 		}
 
 #if !defined(NO_FILES)
@@ -15338,7 +15338,7 @@ handle_request(struct mg_connection *conn)
 		if (!is_authorized_for_put(conn)) {
 			send_authorization_request(conn, NULL);
 			DEBUG_TRACE("%s", "file write needs authorization");
-			return;
+			goto cleanup;
 		}
 #endif
 
@@ -15352,7 +15352,7 @@ handle_request(struct mg_connection *conn)
 			/* Callback handler will not be used anymore. Release it */
 			release_handler_ref(conn, handler_info);
 			DEBUG_TRACE("%s", "access authorization required");
-			return;
+			goto cleanup;
 		}
 	}
 
@@ -15369,7 +15369,7 @@ handle_request(struct mg_connection *conn)
 
 			if (i > 0) {
 				/* Do nothing, callback has served the request. Store
-				 * then return value as status code for the log and discard
+				 * then goto cleanup value as status code for the log and discard
 				 * all data from the client not used by the callback. */
 				conn->status_code = i;
 				if (!conn->must_close) {
@@ -15382,7 +15382,7 @@ handle_request(struct mg_connection *conn)
 				 * b) send a 404 not found
 				 * c) try if there is a file matching the URI
 				 * It would be possible to do a, b or c in the callback
-				 * implementation, and return 1 - we cannot do anything
+				 * implementation, and goto cleanup 1 - we cannot do anything
 				 * here, that is not possible in the callback.
 				 *
 				 * TODO: What would be the best reaction here?
@@ -15420,7 +15420,7 @@ handle_request(struct mg_connection *conn)
 #endif
 		}
 		DEBUG_TRACE("%s", "websocket handling done");
-		return;
+		goto cleanup;
 	}
 
 	/* 8. handle websocket requests */
@@ -15448,7 +15448,7 @@ handle_request(struct mg_connection *conn)
 			mg_send_http_error(conn, 404, "%s", "Not found");
 		}
 		DEBUG_TRACE("%s", "websocket script done");
-		return;
+		goto cleanup;
 	} else
 #endif
 
@@ -15464,7 +15464,7 @@ handle_request(struct mg_connection *conn)
 	if (conn->dom_ctx->config[DOCUMENT_ROOT] == NULL) {
 		mg_send_http_error(conn, 404, "%s", "Not Found");
 		DEBUG_TRACE("%s", "no document root available");
-		return;
+		goto cleanup;
 	}
 
 	/* 10. Request is handled by a script */
@@ -15472,7 +15472,7 @@ handle_request(struct mg_connection *conn)
 		HTTP1_only;
 		handle_file_based_request(conn, path, &file);
 		DEBUG_TRACE("%s", "script handling done");
-		return;
+		goto cleanup;
 	}
 
 	/* Request was not handled by a callback or script. It will be
@@ -15487,7 +15487,7 @@ handle_request(struct mg_connection *conn)
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		/* 11.2. DELETE method */
 		if (!strcmp(ri->request_method, "DELETE")) {
@@ -15495,7 +15495,7 @@ handle_request(struct mg_connection *conn)
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		/* 11.3. MKCOL method */
 		if (!strcmp(ri->request_method, "MKCOL")) {
@@ -15503,7 +15503,7 @@ handle_request(struct mg_connection *conn)
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		/* 11.4. MOVE method */
 		if (!strcmp(ri->request_method, "MOVE")) {
@@ -15511,14 +15511,14 @@ handle_request(struct mg_connection *conn)
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		if (!strcmp(ri->request_method, "COPY")) {
 			dav_move_file(conn, path, 1);
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		/* 11.5. LOCK method */
 		if (!strcmp(ri->request_method, "LOCK")) {
@@ -15526,7 +15526,7 @@ handle_request(struct mg_connection *conn)
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		/* 11.6. UNLOCK method */
 		if (!strcmp(ri->request_method, "UNLOCK")) {
@@ -15534,7 +15534,7 @@ handle_request(struct mg_connection *conn)
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		/* 11.7. PROPPATCH method */
 		if (!strcmp(ri->request_method, "PROPPATCH")) {
@@ -15542,7 +15542,7 @@ handle_request(struct mg_connection *conn)
 			DEBUG_TRACE("handling %s request to %s done",
 			            ri->request_method,
 			            path);
-			return;
+			goto cleanup;
 		}
 		/* 11.8. Other methods, e.g.: PATCH
 		 * This method is not supported for static resources,
@@ -15554,7 +15554,7 @@ handle_request(struct mg_connection *conn)
 		DEBUG_TRACE("method %s on %s is not supported",
 		            ri->request_method,
 		            path);
-		return;
+		goto cleanup;
 	}
 
 	/* 11. File does not exist, or it was configured that it should be
@@ -15564,7 +15564,7 @@ handle_request(struct mg_connection *conn)
 		DEBUG_TRACE("handling %s request to %s: file not found",
 		            ri->request_method,
 		            path);
-		return;
+		goto cleanup;
 	}
 
 	/* 12. Directory uris should end with a slash */
@@ -15595,7 +15595,7 @@ handle_request(struct mg_connection *conn)
 		DEBUG_TRACE("%s request to %s: directory redirection sent",
 		            ri->request_method,
 		            path);
-		return;
+		goto cleanup;
 	}
 
 	/* 13. Handle other methods than GET/HEAD */
@@ -15603,7 +15603,7 @@ handle_request(struct mg_connection *conn)
 	if (!strcmp(ri->request_method, "PROPFIND")) {
 		handle_propfind(conn, path, &file.stat);
 		DEBUG_TRACE("handling %s request to %s done", ri->request_method, path);
-		return;
+		goto cleanup;
 	}
 	/* 13.2. Handle OPTIONS for files */
 	if (!strcmp(ri->request_method, "OPTIONS")) {
@@ -15614,7 +15614,7 @@ handle_request(struct mg_connection *conn)
 		 * preflights). */
 		send_options(conn);
 		DEBUG_TRACE("handling %s request to %s done", ri->request_method, path);
-		return;
+		goto cleanup;
 	}
 	/* 13.3. everything but GET and HEAD (e.g. POST) */
 	if ((0 != strcmp(ri->request_method, "GET"))
@@ -15624,7 +15624,7 @@ handle_request(struct mg_connection *conn)
 		                   "%s method not allowed",
 		                   conn->request_info.request_method);
 		DEBUG_TRACE("handling %s request to %s done", ri->request_method, path);
-		return;
+		goto cleanup;
 	}
 
 	/* 14. directories */
@@ -15642,7 +15642,7 @@ handle_request(struct mg_connection *conn)
 			                   "Error: Directory listing denied");
 		}
 		DEBUG_TRACE("handling %s request to %s done", ri->request_method, path);
-		return;
+		goto cleanup;
 	}
 
 	/* 15. Files with search/replace patterns: LSP and SSI */
@@ -15652,7 +15652,7 @@ handle_request(struct mg_connection *conn)
 		DEBUG_TRACE("handling %s request to %s done (template)",
 		            ri->request_method,
 		            path);
-		return;
+		goto cleanup;
 	}
 
 	/* 16. Static file - maybe cached */
@@ -15663,7 +15663,7 @@ handle_request(struct mg_connection *conn)
 		DEBUG_TRACE("handling %s request to %s done (not modified)",
 		            ri->request_method,
 		            path);
-		return;
+		goto cleanup;
 	}
 #endif /* !NO_CACHING */
 
@@ -15674,6 +15674,12 @@ handle_request(struct mg_connection *conn)
 	            path);
 
 #endif /* !defined(NO_FILES) */
+cleanup:
+    if (ri->local_uri) {
+        mg_free((void *)ri->local_uri);
+        ri->local_uri = NULL;
+    }
+    goto cleanup;
 }
 
 
