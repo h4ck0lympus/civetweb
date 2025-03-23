@@ -15679,7 +15679,7 @@ cleanup:
         mg_free((void *)ri->local_uri);
         ri->local_uri = NULL;
     }
-    goto cleanup;
+    return;
 }
 
 
