@@ -1,0 +1,53 @@
+==799011== ERROR: libFuzzer: out-of-memory (used: 2049Mb; limit: 2048Mb)
+   To change the out-of-memory limit use -rss_limit_mb=<N>
+
+Live Heap Allocations: 25741999 bytes in 7328 chunks; quarantined: 16558691 bytes in 25530 chunks; 332120 other chunks; total chunks: 364978; showing top 95% (at most 8 unique contexts)
+21233984 byte(s) (82%) in 1 allocation(s)
+    #0 0x5ffc48c480f3 in malloc (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x1b70f3) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #1 0x7b1dcf4bb903 in operator new(unsigned long) /build/gcc-14-ig5ci0/gcc-14-14.2.0/build/x86_64-linux-gnu/libstdc++-v3/libsupc++/../../../../src/libstdc++-v3/libsupc++/new_op.cc:50:22
+    #2 0x5ffc48b822ed in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xf12ed) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #3 0x5ffc48bad366 in main (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x11c366) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #4 0x7b1dcf02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7b1dcf02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5ffc48b77cc4 in _start (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xe6cc4) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+
+3148000 byte(s) (12%) in 1 allocation(s)
+    #0 0x5ffc48c480f3 in malloc (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x1b70f3) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #1 0x7b1dcf4bb903 in operator new(unsigned long) /build/gcc-14-ig5ci0/gcc-14-14.2.0/build/x86_64-linux-gnu/libstdc++-v3/libsupc++/../../../../src/libstdc++-v3/libsupc++/new_op.cc:50:22
+    #2 0x5ffc48b822ca in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xf12ca) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #3 0x5ffc48bad366 in main (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x11c366) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #4 0x7b1dcf02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7b1dcf02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5ffc48b77cc4 in _start (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xe6cc4) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+
+208432 byte(s) (0%) in 3723 allocation(s)
+    #0 0x5ffc48c480f3 in malloc (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x1b70f3) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #1 0x7b1dcf4bb903 in operator new(unsigned long) /build/gcc-14-ig5ci0/gcc-14-14.2.0/build/x86_64-linux-gnu/libstdc++-v3/libsupc++/../../../../src/libstdc++-v3/libsupc++/new_op.cc:50:22
+    #2 0x5ffc48b8f9ac in fuzzer::GetSizedFilesFromDir(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&, std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile>>*) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xfe9ac) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #3 0x5ffc48b8311a in fuzzer::ReadCorpora(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>>> const&, std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>>>> const&) FuzzerDriver.cpp.o
+    #4 0x5ffc48b82ccc in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xf1ccc) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #5 0x5ffc48bad366 in main (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x11c366) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #6 0x7b1dcf02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #7 0x7b1dcf02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #8 0x5ffc48b77cc4 in _start (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xe6cc4) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+
+165360 byte(s) (0%) in 1 allocation(s)
+    #0 0x5ffc48c482dd in calloc (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x1b72dd) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #1 0x5ffc48cbfcdc in mg_calloc /home/ubuntu/civetweb/src/civetweb.c:1521:9
+    #2 0x5ffc48d1f466 in mg_start2 /home/ubuntu/civetweb/src/civetweb.c:21160:29
+    #3 0x5ffc48d3358f in mg_start /home/ubuntu/civetweb/src/civetweb.c:21881:9
+    #4 0x5ffc48dd1616 in civetweb_init /home/ubuntu/civetweb/harness.c:458:18
+    #5 0x5ffc48dd0466 in LLVMFuzzerTestOneInput /home/ubuntu/civetweb/harness.c:522:9
+    #6 0x5ffc48b93fc4 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x102fc4) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #7 0x5ffc48b951f1 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile>>&) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x1041f1) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #8 0x5ffc48b957e7 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile>>&) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x1047e7) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #9 0x5ffc48b82cdf in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xf1cdf) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #10 0x5ffc48bad366 in main (/home/ubuntu/civetweb/civetweb_custom_fuzz+0x11c366) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+    #11 0x7b1dcf02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #12 0x7b1dcf02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #13 0x5ffc48b77cc4 in _start (/home/ubuntu/civetweb/civetweb_custom_fuzz+0xe6cc4) (BuildId: 327ebc0143ae9eb4ca52d1a79b0bf7f4b9f31f7a)
+
+MS: 4 CMP-ChangeByte-CopyPart-PersAutoDict- DE: "/GE"-"ET"-; base unit: e4ee4a01ace6a6b1c73fe7fde1843e73e743e218
+artifact_prefix='./'; Test unit written to ./oom-f5ec4689bc1ede0be829498dca3770a369a58039
+SUMMARY: libFuzzer: out-of-memory
+

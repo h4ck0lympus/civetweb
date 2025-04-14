@@ -79,6 +79,10 @@ LIBS += -lm $(LOPT)
 
 ifdef WITH_DEBUG
   CFLAGS += -g -DDEBUG
+else ifdef POC
+  CFLAGS += -g -DDEBUG
+  APP_SOURCES = poc.c
+  CPROG = poc
 else ifdef TEST_ASAN
   CFLAGS += -g -fsanitize=address
   CC = clang
@@ -88,7 +92,7 @@ else ifdef TEST_FUZZ
   CC = clang
   CXX = clang++
   BUILD_DIRS += $(BUILD_DIR)/fuzztest
-  APP_SOURCES = fuzztest/fuzzmain.c  harness.c
+  APP_SOURCES = fuzztest/fuzzmain.c
   OBJECTS = $(LIB_SOURCES:.c=.o) $(APP_SOURCES:.c=.o) harness.o
   CFLAGS += -DTEST_FUZZ$(TEST_FUZZ)
  else ifdef CUSTOM_HARNESS
@@ -99,6 +103,7 @@ else ifdef TEST_FUZZ
   APP_SOURCES = harness.c
   OBJECTS = $(LIB_SOURCES:.c=.o) $(APP_SOURCES:.c=.o)
   CFLAGS += -DTEST_FUZZ$(TEST_FUZZ)
+  CPROG = civetweb_custom_fuzz
 else
   CFLAGS += -O2 -DNDEBUG
 endif

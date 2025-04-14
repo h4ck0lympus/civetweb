@@ -435,9 +435,9 @@ static unsigned short PORT_NUM_HTTP = 0; // port number we are running the serve
 const char *init_options[] = {
     "listening_ports","0", // automatically pick free tcp port at runtime
     "num_threads", "1", // minimal interal threads
-    "document_root", ".",
-    "error_log_file", "/dev/null",
-    "access_log_file", "/dev/null",
+    "document_root", "./index.html",
+    "error_log_file", "./error_log_file",
+    "access_log_file", "./access_log_file",
     NULL
 };
 
@@ -467,6 +467,7 @@ static void civetweb_init(void) {
     }
     PORT_NUM_HTTP = ports[0].port;
     sleep(5);
+    printf("Done initializing\n");
     atexit(civetweb_exit);
 }
 
@@ -507,24 +508,37 @@ static void *fuzz_thread(void *arg) {
     process_new_connection(conn);
     
     mg_close_connection(conn);
-    close(sv[0]);
     pthread_mutex_destroy(&conn->mutex);
     free(conn->buf);
-    conn->buf = NULL;
     free(conn);
-    conn = NULL;
     close(sv[1]);
     return NULL;
 }
 
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int main(int argc, char* argv[]) {
     if (!global_ctx) {
+	printf("Initiating Civetweb\n");
         civetweb_init();
     }
-    if (size < 1) return 0;
+
+    FILE* input_file = fopen("./poc_input", "rb");
+
+    if (input_file == NULL) {
+	    fprintf(stderr, "input file missing");
+	    return;
+    }
+
+    uint8_t data[4096];
+
+    size_t bytes_read = fread(data, 1, sizeof(data), input_file);
+    if (bytes_read == 0) {
+	    printf("stdin data");
+	    return;
+    }
+
     int thread_count = 3; // (data[0] % 3) + 2; // fixed thread count = 3
     const uint8_t *payload = data + 1;
-    size_t payload_len = size - 1;
+    size_t payload_len = bytes_read - 1;
     size_t chunk = payload_len / thread_count;
     
 
